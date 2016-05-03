@@ -14,7 +14,7 @@ library(data.table)
 library(lubridate)
 library(dplyr)
 library(ggplot2)
-library(stingr)
+library(stringr)
 
 
 # Read first file #########################
@@ -45,13 +45,13 @@ plot(email_count)
 plotEmail <- ggplot(email_count, aes(x = YearMonthDay, y = emails)) +
         geom_point(alpha = 0.25) +
         geom_vline(aes(xintercept = as.numeric(SanBruno))) +
-        ggtitle("CPUC and PG&E Communication \nEmails by Day")
+        ggtitle("CPUC and PG&E Communication \nEmails by Day") 
 
 #call plot
 plotEmail
 
 ## Lets take apart the sender email into name and email address
 
-x <- strsplit(email_index$Sender, "\\(")
+x <- strsplit(email_index$Sender, "\\(") #seperate name and email... have to deal with blank and other
 head(x)
 x <- matrix(unlist(x), ncol=2, byrow=TRUE)
