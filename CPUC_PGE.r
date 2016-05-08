@@ -63,3 +63,8 @@ head(x)
 x <- matrix(unlist(x), ncol=2, byrow=TRUE) #doesn't work
 x.df <- as.data.frame(x) #convert to data frame
 x.df <- rename(x.df, sender_name = V1, sender_email = V2) #note how we only have 93267 observation of origional 120k .. :/
+
+### doesn't line up :/...but has correct observation count
+y <- str_split_fixed(email_index$Sender, "\\(", 2)
+y <- matrix(unlist(y), ncol=2, byrow=TRUE)
+y.df <- as.data.frame(y)
