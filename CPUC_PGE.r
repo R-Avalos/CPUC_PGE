@@ -24,8 +24,9 @@ dest_file <- getURL("ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling
 
 email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
 # save(email_index, file = "email_index.rda") # save file to local
-load("email_index.rda")
 remove(email_index)
+
+load("email_index.rda")
 SanBruno <- ymd("2010-09-09") #San Bruno explosion
 
 # Transform ###############################
@@ -40,6 +41,10 @@ email_index$MasterDate <- mdy_hm(email_index$MasterDate) # convet to Date, 136 f
 email_index$YearMonthDay <- format(as.POSIXct(email_index$MasterDate, format="%Y-%m-%d"), format="%Y-%m-%d") #remove hours, minutes, seconds
 email_index$YearMonthDay <- ymd(email_index$YearMonthDay) #convert to date
 
+### Remove RE: FW: 
+# Split to new row, by "RE:" and "FW:", else place "New"
+
+
 ########### quick look at emails per day
 # Sum emails by day
 email_count <- email_index %>% 
@@ -53,8 +58,15 @@ plotEmail <- ggplot(email_count, aes(x = YearMonthDay, y = emails)) +
         geom_vline(aes(xintercept = as.numeric(SanBruno))) +
         ggtitle("CPUC and PG&E Communication \nEmails by Day") 
 
-#call plot
-plotEmail
+plotEmail #call plot
+
+
+
+## Count of not recorded
+x <- email_index %>%
+        group_by(Recipient=="Not Recorded")
+x <- subset(x, `Recipient == "Not Recorded"`==TRUE) # get count of meails not recorded
+# 42% of the emails do not record recipient or sender
 
 ## Lets take apart the sender email into name and email address
 
