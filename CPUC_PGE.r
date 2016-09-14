@@ -13,7 +13,9 @@ library(RCurl)
 library(data.table)
 library(lubridate)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
+library(ggthemes)
 library(stringr)
 
 
@@ -30,16 +32,21 @@ load("email_index.rda")
 SanBruno <- ymd("2010-09-09") #San Bruno explosion
 
 # Transform ###############################
-email_index$Recipient[email_index$Recipient==""] <- "Not Recorded" #stand in for missing receipent value
-email_index$Sender[email_index$Sender==""] <- "Not Recorded"
+
+email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)" #stand in for missing receipent value
+email_index$Sender[email_index$Sender==""] <- "Not Recorded (Not Recorded)"
 email_index$Subject[email_index$Subject==""] <- "Not Recorded"
-## these values may refere to email one line up in data frame
+email_index$MasterDate <- as.Date(email_index$MasterDate, format = "%m/%d/%Y") # convet to Date
 
-email_index$MasterDate <- mdy_hm(email_index$MasterDate) # convet to Date, 136 failed to parse
+## Lets take apart the sender email into name and email address
+email_index <- email_index %>%
+        separate(Sender, into = c("Sender_Name", "Sender_Email"), sep = "\\(") # split sender into name and email
+email_index$Sender_Email <- gsub("\\)", "",email_index$Sender_Email) # remove )
+email_index$Sender_Email <- as.factor(email_index$Sender_Email) # factor emails
 
-
-email_index$YearMonthDay <- format(as.POSIXct(email_index$MasterDate, format="%Y-%m-%d"), format="%Y-%m-%d") #remove hours, minutes, seconds
-email_index$YearMonthDay <- ymd(email_index$YearMonthDay) #convert to date
+## Break apart ricipient
+x <- email_index %>%
+        separate_rows(Recipient, sep = ";")
 
 ### Remove RE: FW: 
 # Split to new row, by "RE:" and "FW:", else place "New"
@@ -48,15 +55,17 @@ email_index$YearMonthDay <- ymd(email_index$YearMonthDay) #convert to date
 ########### quick look at emails per day
 # Sum emails by day
 email_count <- email_index %>% 
-        group_by(YearMonthDay) %>%
-        summarise(emails = n())
+        group_by(MasterDate) %>%
+        summarise(emails = n_distinct(FileName))
 plot(email_count)
 
 #create plot
-plotEmail <- ggplot(email_count, aes(x = YearMonthDay, y = emails)) +
+plotEmail <- ggplot(email_count, aes(x = MasterDate, y = emails)) +
         geom_point(alpha = 0.25) +
-        geom_vline(aes(xintercept = as.numeric(SanBruno))) +
-        ggtitle("CPUC and PG&E Communication \nEmails by Day") 
+        geom_rangeframe() +
+        geom_vline(aes(xintercept = as.numeric(SanBruno)), color = "red", alpha = 0.75) +
+        ggtitle("CPUC and PG&E Communication \nEmails by Day") +
+        theme_tufte()
 
 plotEmail #call plot
 
@@ -66,17 +75,5 @@ plotEmail #call plot
 x <- email_index %>%
         group_by(Recipient=="Not Recorded")
 x <- subset(x, `Recipient == "Not Recorded"`==TRUE) # get count of meails not recorded
-# 42% of the emails do not record recipient or sender
+summary(x) # 42% of the emails do not record recipient or sender
 
-## Lets take apart the sender email into name and email address
-
-x <- strsplit(email_index$Sender, "\\(") #seperate name and email... have to deal with blank and other
-head(x)
-x <- matrix(unlist(x), ncol=2, byrow=TRUE) #doesn't work
-x.df <- as.data.frame(x) #convert to data frame
-x.df <- rename(x.df, sender_name = V1, sender_email = V2) #note how we only have 93267 observation of origional 120k .. :/
-
-### doesn't line up :/...but has correct observation count
-y <- str_split_fixed(email_index$Sender, "\\(", 2)
-y <- matrix(unlist(y), ncol=2, byrow=TRUE)
-y.df <- as.data.frame(y)
