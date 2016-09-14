@@ -32,11 +32,10 @@ load("email_index.rda")
 SanBruno <- ymd("2010-09-09") #San Bruno explosion
 
 # Transform ###############################
-
 email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)" #stand in for missing receipent value
 email_index$Sender[email_index$Sender==""] <- "Not Recorded (Not Recorded)"
 email_index$Subject[email_index$Subject==""] <- "Not Recorded"
-email_index$MasterDate <- as.Date(email_index$MasterDate, format = "%m/%d/%Y") # convet to Date
+email_index$MasterDate <- as.POSIXct(email_index$MasterDate, format = "%m/%d/%Y %H:%M") # convet to date with time
 
 ## Lets take apart the sender email into name and email address
 email_index <- email_index %>%
@@ -44,9 +43,14 @@ email_index <- email_index %>%
 email_index$Sender_Email <- gsub("\\)", "",email_index$Sender_Email) # remove )
 email_index$Sender_Email <- as.factor(email_index$Sender_Email) # factor emails
 
-## Break apart ricipient
+## Break apart ricipients, long data format
 x <- email_index %>%
         separate_rows(Recipient, sep = ";")
+x <- x %>%
+        separate(Recipient, into = c("Recipient_Name", "Recipient_Email"), sep = "\\(") #split recipient 
+x$Recipient_Email <- gsub("\\)", "", x$Recipient_Email) # remove )
+
+
 
 ### Remove RE: FW: 
 # Split to new row, by "RE:" and "FW:", else place "New"
