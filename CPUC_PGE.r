@@ -5,9 +5,7 @@
 ##############  Overview ########################### 
 # Practice ETL (Extract, Transform, LOad) using publicly available dataset
 
-
 rm(list = ls()) # clear workspace
-gc() # garbage collection, clear memory
 
 library(RCurl)
 library(data.table)
@@ -16,26 +14,32 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(ggthemes)
-library(stringr)
+library(feather)
+#library(stringr)
 
 
-# Read first file #########################
+# load("email_index.rda") #load r dataset
+email_index <- read_feather("email_index.feather") # load converted data frame
+SanBruno <- ymd("2010-09-09") #San Bruno explosion
+SanBruno_hms <- ymd_hms("2010-09-09 18:11:12") #San Bruno explosion exact time
+
+
+###### Pull data from ftp server and transfrom to usable data frame
+
+## Read data from FTP and convert to data frame
 # Base URL as of April 25, 2016
 base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
 dest_file <- getURL("ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/Index/SB_GT&S_Production Metadata.csv") #download file as character
-
 email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
 # save(email_index, file = "email_index.rda") # save file to local
-remove(email_index)
+# write_feather(email_index, "email_index.feather") # save file as feater to local
 
-load("email_index.rda")
-SanBruno <- ymd("2010-09-09") #San Bruno explosion
-
-# Transform ###############################
+# Transform data frame to long format
 email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)" #stand in for missing receipent value
 email_index$Sender[email_index$Sender==""] <- "Not Recorded (Not Recorded)"
 email_index$Subject[email_index$Subject==""] <- "Not Recorded"
 email_index$MasterDate <- as.POSIXct(email_index$MasterDate, format = "%m/%d/%Y %H:%M") # convet to date with time
+email_index$Day <- floor_date(email_index$MasterDate, "days") # get floor date
 
 ## Lets take apart the sender email into name and email address
 email_index <- email_index %>%
@@ -43,41 +47,59 @@ email_index <- email_index %>%
 email_index$Sender_Email <- gsub("\\)", "",email_index$Sender_Email) # remove )
 email_index$Sender_Email <- as.factor(email_index$Sender_Email) # factor emails
 
-## Break apart ricipients, long data format
-x <- email_index %>%
+## Break apart recipients, long data format
+email_index <- email_index %>%
         separate_rows(Recipient, sep = ";")
-x <- x %>%
+email_index <- email_index %>%
         separate(Recipient, into = c("Recipient_Name", "Recipient_Email"), sep = "\\(") #split recipient 
-x$Recipient_Email <- gsub("\\)", "", x$Recipient_Email) # remove )
+email_index$Recipient_Email <- gsub("\\)", "", email_index$Recipient_Email) # remove )
+email_index$Sender_Name <- as.factor(email_index$Sender_Name)
+head(summary(email_index$Sender_Name))
+
+# Save transformation locally
+write_feather(email_index, "email_index.feather")# save this dataframe as a feather file
 
 
+### Classifty Forward and Reply emails (FW: RE:)
 
-### Remove RE: FW: 
-# Split to new row, by "RE:" and "FW:", else place "New"
 
 
 ########### quick look at emails per day
-# Sum emails by day
+# Sum of emails by day
 email_count <- email_index %>% 
-        group_by(MasterDate) %>%
-        summarise(emails = n_distinct(FileName))
-plot(email_count)
+        group_by(Day) %>%
+        summarise(emails = n_distinct(FileName)) 
+summary(email_count)
 
-#create plot
-plotEmail <- ggplot(email_count, aes(x = MasterDate, y = emails)) +
+
+#sub_x_email <- subset(email_index, Sender_Name=="WPena")
+#plot_x <- ggplot(x_email_count, aes(x = MasterDate, y = email, color = Sender_Name)) +
+#        geom_point()
+#plot_x
+
+# Plot of Emails by Day
+plotEmail <- ggplot(email_count, aes(x = as.Date(Day), y = emails)) +
         geom_point(alpha = 0.25) +
         geom_rangeframe() +
-        geom_vline(aes(xintercept = as.numeric(SanBruno)), color = "red", alpha = 0.75) +
+        geom_segment(aes(x = as.Date(SanBruno, format = "%Y-%m-%d"), 
+                         yend = max(email_count$emails), 
+                         xend = as.Date(SanBruno, format = "%Y-%m-%d")),
+                         color = "red") +
         ggtitle("CPUC and PG&E Communication \nEmails by Day") +
+        ylab("Count of Emails") +
+        xlab("Date") +
         theme_tufte()
-
-plotEmail #call plot
-
+plotEmail <- plotEmail + annotate("text", 
+                     x = SanBruno, 
+                     y = max(email_count$emails), 
+                     label = "San Bruno Explosion",
+                     color = "red", 
+                     hjust = -0.05,
+                     vjust = 1) #call plot
+plotEmail
 
 
 ## Count of not recorded
-x <- email_index %>%
-        group_by(Recipient=="Not Recorded")
-x <- subset(x, `Recipient == "Not Recorded"`==TRUE) # get count of meails not recorded
-summary(x) # 42% of the emails do not record recipient or sender
+#x <- subset(email_index, Recipient_Name =="Not Recorded") # get count of meails not recorded
+#summary(x) # 42% of the emails do not record recipient or sender
 
