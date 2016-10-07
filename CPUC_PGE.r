@@ -7,7 +7,7 @@
 
 rm(list = ls()) # clear workspace
 
-library(Rcurl)
+library(RCurl)
 library(data.table)
 library(lubridate)
 library(dplyr)
@@ -15,8 +15,8 @@ library(tidyr)
 library(ggplot2)
 library(ggthemes)
 library(feather)
+library(tm)
 # library(stringr)
-
 
 ## Load Transformed data frames
 email_index <- read_feather("email_index.feather") # load converted data frame
@@ -28,7 +28,7 @@ SanBruno_hms <- ymd_hms("2010-09-09 18:11:12") #San Bruno explosion exact time
 
 ## Read data from FTP and convert to data frame
 # Base URL as of April 25, 2016
-base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
+# base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
 dest_file <- getURL("ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/Index/SB_GT&S_Production Metadata.csv") #download file as character
 email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
 save(email_index, file = "email_index_download.rda") # save file to local
@@ -63,9 +63,6 @@ email_index$Recipient_Email <- trimws(email_index$Sender_Email, which = "both")
 email_index$Sender_Name <- as.factor(email_index$Sender_Name)
 email_index$Sender_Email <- as.factor(email_index$Sender_Email) 
 
-#
-head(summary(email_index$Sender_Name))
-
 # Save transformation locally
 write_feather(email_index, "email_index.feather")# save this dataframe as a feather file
 
@@ -80,12 +77,22 @@ email_count <- email_index %>%
         group_by(Day) %>%
         summarise(emails = n_distinct(FileName)) 
 summary(email_count)
+sum(email_count$emails) # however, many of these are non emails. Must remove non-emails.
 
+
+# Subset by highest count by sender
+head(summary(email_index$Sender_Name))
 
 sub_x_email <- subset(email_index, Sender_Name=="Cuaresma, Sally")
 sub_email_count <- sub_x_email %>% 
         group_by(Day) %>%
         summarise(emails = n_distinct(FileName)) 
+
+sub_x_email <- subset(email_index, Sender_Name=="Not Recorded") #52807, non-email comms
+sub_email_count <- sub_x_email %>% 
+        group_by(Day) %>%
+        summarise(emails = n_distinct(FileName)) 
+
 
 plot_x <- ggplot(sub_email_count, aes(x = as.Date(Day), 
                                       y = emails)) +
@@ -116,9 +123,11 @@ plotEmail <- plotEmail + annotate("text",
                      hjust = -0.05,
                      vjust = 1) #call plot
 plotEmail
+ggsave("CPUC_PGE_emailcount.png", width = 8, height = 4)
 
+# simple example network graph
+library(igraph)
 
-## Count of not recorded
-#x <- subset(email_index, Recipient_Name =="Not Recorded") # get count of meails not recorded
-#summary(x) # 42% of the emails do not record recipient or sender
-
+x <- subset(email_index, Day < SanBruno_hms) #subset data to before 9-9-2010
+x_netgraph <- graph.data.frame(x, directed = FALSE)
+plot(x_netgraph)
