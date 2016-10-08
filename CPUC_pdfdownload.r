@@ -9,6 +9,7 @@ library(ggplot2)
 library(ggthemes)
 library(feather)
 library(tm)
+library(httr)
 
 ## Create function to download each year-month and store to directory
 url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
@@ -27,13 +28,15 @@ str(site)
 
 site2 <- unlist(strsplit(site, "\\\r")) # split list
 head(site2)
-gsub("\\\n", "", site2) # remove headers
+site2 <- gsub("\\\n", "", site2) # remove headers
 
 # we have PDF and XLS files .... keep both, but first make use of PDFs
-y <- Filter(function(x) !any(grepl(".xls", x)), site2) #remove xls files
+y <- Filter(function(x) !any(grepl(".xls", x)), site2) #remove files that are TRUE or mathcing .xls
 
 
 # Download PDF files
+GET(url = paste0(url, year2010_1, "SB_GT&S_0000001.pdf"), write_disk(path = "SB_GT&S_0000001.pdf", overwrite = FALSE), progress())
+
 # Download XLS files
 
 # Save into local SQL database
