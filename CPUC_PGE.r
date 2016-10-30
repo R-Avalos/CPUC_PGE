@@ -15,8 +15,8 @@ library(tidyr)
 library(ggplot2)
 library(ggthemes)
 library(feather)
-library(tm)
-# library(stringr)
+library(tidytext)
+#library(tm)
 
 ## Load Transformed data frames
 email_index <- read_feather("email_index.feather") # load converted data frame
@@ -24,10 +24,9 @@ SanBruno <- ymd("2010-09-09") #San Bruno explosion
 SanBruno_hms <- ymd_hms("2010-09-09 18:11:12") #San Bruno explosion exact time
 
 
-###### Pull data from ftp server and transfrom to usable data frame
+###### Pull index data from ftp server and transfrom to usable data frame
 
 ## Read data from FTP and convert to data frame
-# Base URL as of April 25, 2016
 # base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
 dest_file <- getURL("ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/Index/SB_GT&S_Production Metadata.csv") #download file as character
 email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
@@ -125,9 +124,3 @@ plotEmail <- plotEmail + annotate("text",
 plotEmail
 ggsave("CPUC_PGE_emailcount.png", width = 8, height = 4)
 
-# simple example network graph
-library(igraph)
-
-x <- subset(email_index, Day < SanBruno_hms) #subset data to before 9-9-2010
-x_netgraph <- graph.data.frame(x, directed = FALSE)
-plot(x_netgraph)
