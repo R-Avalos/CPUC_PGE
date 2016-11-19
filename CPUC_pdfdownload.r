@@ -75,12 +75,36 @@ site2 <- gsub("\\\n", "", site2) # remove headers
 site2PDF <- Filter(function(x) !any(grepl(".xls", x)), site2) #remove files that are TRUE or matching .xls
 #y2 <- paste0(url, "/", y) #paste together full string
 #head(site2PDF)
-
 #sapply(site2PDF, summary)
 
 # Download PDF files for January 2010
 tail(site2PDF)
 sapply(site2PDF, downloadPDF) # for each file in list, download and save to current directory
+
+
+# Convert to text files
+# Since the PDFs are saved as text type, instead of image, we can use pdftotext conversion software # Download: http://www.foolabs.com/xpdf/download.html, check out https://gist.github.com/benmarwick/11333467 for reference
+
+
+# Tell R what folder contains your PDFs
+dest <- "D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010"
+# Create a list of PDF file names
+myfiles <- list.files(path = dest, pattern = "pdf",  full.names = TRUE)
+myfiles[1]
+lapply(myfiles[2], function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) )
+
+
+
+library(readr)
+file_names <- c("SB_GT&S_0000001.txt", "SB_GT&S_0000002.txt")
+x <- read_file("PDF_2010/SB_GT&S_0000001.txt")
+y <- read_file("PDF_2010/SB_GT&S_0000002.txt")
+z <- c(x, y)
+
+# create data frame of all files, from and to
+x_df <- data.frame(file_names, z)
+
+
 
 
 # Download XLS files

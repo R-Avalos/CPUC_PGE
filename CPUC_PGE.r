@@ -30,8 +30,8 @@ SanBruno_hms <- ymd_hms("2010-09-09 18:11:12") #San Bruno explosion exact time
 # base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
 dest_file <- getURL("ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/Index/SB_GT&S_Production Metadata.csv") #download file as character
 email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
-save(email_index, file = "email_index_download.rda") # save file to local
-# write_feather(email_index, "email_index_download.feather") # save file as feater to local
+#save(email_index, file = "email_index_download.rda") # save file to local
+#write_feather(email_index, "email_index_download.feather") # save file as feater to local
 
 # Transform data frame to long format
 email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)" #stand in for missing receipent value
@@ -61,6 +61,9 @@ email_index$Recipient_Email <- trimws(email_index$Sender_Email, which = "both")
 # Factor sender and receivers
 email_index$Sender_Name <- as.factor(email_index$Sender_Name)
 email_index$Sender_Email <- as.factor(email_index$Sender_Email) 
+
+# Save file name by remove .pdf for referencing
+email_index$email <- gsub(".pdf", "", email_index$FileName)
 
 # Save transformation locally
 write_feather(email_index, "email_index.feather")# save this dataframe as a feather file
