@@ -7,33 +7,37 @@ library(feather)
 library(tm)
 # library(httr) best used for API
 
-## Create function to download each year-month and store to directory
+######## Create function to download each year-month and store to directory
 url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
 local_directory <- "D:/CPUC_PGE/CPUC_PGE_ETL" #set directory for storage
 
 # Year Month /2010/01/
 # year2010_1 <- "/2010/01/"
 
-setwd("./PDF_2010")
-setwd("..") #back to home
-getwd() # D:/CPUC_PGE/CPUC_PGE_ETL
+#setwd("./PDF_2010")
+#setwd("..") #back to home
+#getwd() # D:/CPUC_PGE/CPUC_PGE_ETL
 
 # Create list of 2010 emails
 #pdfs2010_1 <- subset(email_index, MasterDate >= ymd("2010/1/1") & MasterDate < ymd("2010/2/1")) 
 
 
-# Download PDF files
+# Download PDF file function
 downloadPDF <- function(x) {
-        curl_download(url = paste0(url, year2010_1, x), 
+        curl_download(url = paste0(url, "/", year, "/", month_in_digits,"/", x),
                       destfile = x)
 }
 
-# Function to download files to local storage
-testfunction_pdf(year = 2010, month_2digits = 02)
+# downloadPDF <- function(x) {
+#         curl_download(url = paste0(url, year2010_1, x), 
+#                       destfile = x)
+# }
 
-testfunction_pdf <- function(year, month_2digits = 01) {
+
+## Function specific to this FTP to download files
+testfunction_pdf <- function(ftp_url = url, year = 2010, month_in_digits = 01) {
         require(RCurl)
-        url_long <- paste0(url, "/", year, "/", month_2digits, "/")
+        url_long <- paste0(ftp_url, "/", year, "/", month_in_digits, "/")
         
         # Setup the directory
         directory_year <- paste0(local_directory, 
@@ -42,11 +46,11 @@ testfunction_pdf <- function(year, month_2digits = 01) {
                                   "/")
         ifelse(!dir.exists(file.path(directory_year)), 
                dir.create(file.path(directory_year)), 
-               FALSE) # Create the year directory if not existen
-        ifelse(!dir.exists(file.path(directory_year, month_2digits)), 
-               dir.create(file.path(directory_year, month_2digits)), 
+               FALSE) # Create the year directory if not existent
+        ifelse(!dir.exists(file.path(directory_year, month_in_digits)), 
+               dir.create(file.path(directory_year, month_in_digits)), 
                FALSE) # Create month direcotry if not existent
-        setwd(file.path(directory_year, month_2digits)) #move to the directory
+        setwd(file.path(directory_year, month_in_digits)) #move to the directory
         print(getwd()) #print the current directory
         
         # Get list of files from site and download
@@ -61,29 +65,24 @@ testfunction_pdf <- function(year, month_2digits = 01) {
 }
 
 
-
-# Get list from url
-#library(httr)
-site <- getURL(url = paste0(url, year2010_1), ftp.use.epsv = FALSE, dirlistonly = TRUE)
-str(site)
-
-site2 <- unlist(strsplit(site, "\\\r")) # split list
-head(site2)
-site2 <- gsub("\\\n", "", site2) # remove headers
-
-# we have PDF and XLS files .... keep both, but first make use of PDFs
-site2PDF <- Filter(function(x) !any(grepl(".xls", x)), site2) #remove files that are TRUE or matching .xls
-#y2 <- paste0(url, "/", y) #paste together full string
-#head(site2PDF)
-#sapply(site2PDF, summary)
-
-# Download PDF files for January 2010
-tail(site2PDF)
-sapply(site2PDF, downloadPDF) # for each file in list, download and save to current directory
+# Function to download files to local storage
+testfunction_pdf(year = 2010, month_in_digits = 02)
 
 
-# Convert to text files
+################## Convert to text files #############################
 # Since the PDFs are saved as text type, instead of image, we can use pdftotext conversion software # Download: http://www.foolabs.com/xpdf/download.html, check out https://gist.github.com/benmarwick/11333467 for reference
+
+
+dummy <- function(x){
+        for(i in x){
+        #convert to pdf
+        #add to dataframe
+                # file name | Text 
+        } else
+        {
+                return(print("Failed"))
+        }
+}
 
 
 # Tell R what folder contains your PDFs
@@ -94,7 +93,7 @@ myfiles[1]
 lapply(myfiles[2], function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) )
 
 
-
+#### Read all text files into data frame, add column removing ".txt" as a key
 library(readr)
 file_names <- c("SB_GT&S_0000001.txt", "SB_GT&S_0000002.txt")
 x <- read_file("PDF_2010/SB_GT&S_0000001.txt")
