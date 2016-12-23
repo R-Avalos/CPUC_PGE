@@ -6,11 +6,11 @@
 # Practice ETL (Extract, Transform, LOad) using publicly available dataset
 
 rm(list = ls()) # clear workspace
-
+library(dtplyr)
 library(RCurl)
-library(data.table)
+#library(data.table)
 library(lubridate)
-library(dplyr)
+#library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(ggthemes)
@@ -79,7 +79,7 @@ email_count <- email_index %>%
         group_by(Day) %>%
         summarise(emails = n_distinct(FileName)) 
 summary(email_count)
-sum(email_count$emails) # however, many of these are non emails. Must remove non-emails.
+sum(email_count$emails) # however, many of these are not emails. Must remove non-emails.
 
 
 # Subset by highest count by sender
@@ -116,7 +116,8 @@ plotEmail <- ggplot(email_count, aes(x = as.Date(Day), y = emails)) +
         ggtitle("CPUC and PG&E Communication \nEmails by Day") +
         ylab("Count of Emails") +
         xlab("Date") +
-        theme_tufte()
+        theme_tufte() +
+        theme(panel.background = element_rect(fill="transparent", color = NA))
 plotEmail <- plotEmail + annotate("text", 
                      x = SanBruno, 
                      y = max(email_count$emails), 
@@ -125,5 +126,5 @@ plotEmail <- plotEmail + annotate("text",
                      hjust = -0.05,
                      vjust = 1) #call plot
 plotEmail
-ggsave("CPUC_PGE_emailcount.png", width = 8, height = 4)
+ggsave("CPUC_PGE_emailcount.png", width = 8, height = 4, bg = "transparent")
 
