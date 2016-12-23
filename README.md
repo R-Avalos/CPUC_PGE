@@ -14,7 +14,7 @@ Please contact author.
 Long format with each observation, row, showing a unique link between sender and recipient.
 
 ### PDF Conversion to text
-To be done.
+Script to download pdfs and convert to string for each month and year.
 
 ### SQL database setup
 To be done.
