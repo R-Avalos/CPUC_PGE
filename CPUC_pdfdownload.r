@@ -9,19 +9,6 @@ library(tm)
 # library(httr) best used for API
 
 ######## Create function to download each year-month and store to directory
-url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
-local_directory <- "D:/CPUC_PGE/CPUC_PGE_ETL" #set directory for storage
-
-# Year Month /2010/01/
-# year2010_1 <- "/2010/01/"
-
-#setwd("./PDF_2010")
-#setwd("..") #back to home
-#getwd() # D:/CPUC_PGE/CPUC_PGE_ETL
-
-# Create list of 2010 emails
-#pdfs2010_1 <- subset(email_index, MasterDate >= ymd("2010/1/1") & MasterDate < ymd("2010/2/1")) 
-
 
 # Download PDF file function
 downloadPDF <- function(x) {
@@ -29,9 +16,13 @@ downloadPDF <- function(x) {
                       destfile = x)
 }
 
+url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
+local_directory <- "D:/CPUC_PGE/CPUC_PGE_ETL" #set directory for storage
+
+
 ### Function specific to this FTP site to download files
 # Function will first create the folder in the working directory for the year month
-# Once that is created, the function will select the PDF files (removing the excel files) and download the pdfs to the loca directory
+# Once that is created, the function will select the PDF files (removing the excel files) and download the pdfs to the local directory
 
 FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_digits = 01) {
         require(RCurl) #load package
@@ -78,15 +69,18 @@ FTP_downloadandstore_pdf_func(year = 2010, month_in_digits = 02)
 
 dummy <- function(file_folder){
         library(readr)
-        myfiles <- list.files(path = file_folder, pattern = "pdf", full.names = TRUE) # list files
+        myfiles <- list.files(path = file_folder, 
+                              pattern = "pdf", 
+                              full.names = TRUE) # list files
         lapply(myfiles, function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) ) # convert to pdf
         
         # add text files to dataframe
         mytxtfiles <- list.files(path = file_folder, pattern = "txt", full.names = TRUE)
  ##################        
 }
-
 dummy
+
+
 # Tell R what folder contains your PDFs
 dest <- "D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010"
 # Create a list of PDF file names
