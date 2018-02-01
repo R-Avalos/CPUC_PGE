@@ -11,7 +11,8 @@ Please contact author.
 
 ### Index
 
-Long format with each observation, row, showing a unique link between sender and recipient.
+Long format with each observation, row, showing a unique link between sender and recipient.  
+Index csv available at https://archive.org/details/cpuc_pge_email_index
 
 ### PDF Conversion to text
 Script to download pdfs and convert to string for each month and year.
