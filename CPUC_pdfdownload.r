@@ -86,18 +86,17 @@ dest <- "D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010"
 # Create a list of PDF file names
 myfiles <- list.files(path = dest, pattern = "pdf",  full.names = TRUE)
 myfiles[3]
-lapply(myfiles, function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) ) # Make call to convert files
+lapply(myfiles, function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) ) # Make call to convert files from PDF TO Text files
 
 
 #### Read all text files into data frame, add column removing ".txt" as a key
-library(readr)
+library(readr) #library to read in files
+library(tibble) #library to save as tbl_df, aka tibble
 getwd() # "D:/CPUC_PGE/CPUC_PGE_ETL"
 setwd("D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010")
 
 # Function to change individual text file into data frame and remove line breaks
 file_convert <- function(file_name) {
-        library(readr) #library to read in files
-        library(tibble) #library to save as tbl_df, aka tibble
         my_string <- read_file(file = file_name) # read file
         my_string <- as.character(my_string)
         my_string <- gsub("\r?\n|\r", " ", my_string) # remove line breaks
