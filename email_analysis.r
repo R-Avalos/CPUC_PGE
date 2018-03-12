@@ -23,7 +23,7 @@ file_convert <- function(file_name) {
 
 # Load Data
 getwd()
-setwd("D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010")# set to appropriate working directory
+setwd("D:/CPUC_PGE/CPUC_PGE/PDF_2010")# set to appropriate working directory
 # setwd("..")
 files = list.files(pattern = "*.txt") # list files
 df <- lapply(files, file_convert) %>% bind_rows() #convert to data frame
