@@ -17,12 +17,12 @@ downloadPDF <- function(x) {
 }
 
 url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
-local_directory <- "D:/CPUC_PGE/CPUC_PGE_ETL" #set directory for storage
+local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
 
 
 ### Function specific to this FTP site to download files
 # Function will first create the folder in the working directory for the year month
-# Once that is created, the function will select the PDF files (removing the excel files) and download the pdfs to the local directory
+# Once that is created, the function will get a list of PDF files from the FTP directory (removing the excel files) and download the pdfs to the local directory
 
 FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_digits = 01) {
         require(RCurl) #load package

@@ -1,4 +1,4 @@
-# Download, transform, and load data
+# Download, transform, and load the index of all emails
 
 setwd("D:/CPUC_PGE/CPUC_repo/CPUC_PGE")
 
@@ -33,7 +33,7 @@ email_index$Sender_Email <- gsub("\\)", "",email_index$Sender_Email) # remove )
 email_index$Sender_Name[email_index$Sender_Name==""] <- "Not Recorded (Not Recorded)"
 
 email_index <- email_index %>%
-        separate_rows(Recipient, sep = ";") # split recipients into unique observations, increases obs from 120,746 to 363,726 obs. Each email pair is a communcation.
+        separate_rows(Recipient, sep = ";") # split recipients into unique observations, increases obs from 120,746 to 3,863,726 obs. Each email pair is a communcation.
 email_index <- email_index %>%
         separate(Recipient, into = c("Recipient_Name", "Recipient_Email"), sep = "\\(") #split recipient name and email into separate variables
 email_index$Recipient_Email <- gsub("\\)", "", email_index$Recipient_Email) # remove )
