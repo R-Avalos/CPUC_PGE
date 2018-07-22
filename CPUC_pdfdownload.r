@@ -25,18 +25,19 @@ local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
 # Function will first create the folder in the working directory for the year month
 # Once that is created, the function will get a list of PDF files from the FTP directory (removing the excel files) and download the pdfs to the local directory
 
-FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_digits = 01) {
+FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits = 2010, month_in_digits = 01) {
         require(RCurl) #load package
         # require(lubridate)
         #convert month to digits
         # month_variable <- as.month(month_in_digits)
         # month_variable <- as.numeric(month_in_digits)
-        url_long <- paste0(ftp_url, "/", year, "/", month_in_digits, "/") #paste url, with month year into a string
+        url_long <- paste0(download_url, "/", as.character(year_in_digits), "/",
+                           as.character(month_in_digits), "/") #paste url, with month year_in_digits into a string
         
-        # Setup the directory
+        # Setup the local directory
         directory_year <- paste0(local_directory, 
                                   "/", 
-                                  as.character(year), 
+                                  as.character(year_in_digits), 
                                   "/") #create character of the "local_directory/year/"
         ifelse(!dir.exists(file.path(directory_year)), 
                dir.create(file.path(directory_year)), 
@@ -61,7 +62,7 @@ FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_d
 
 
 ## url_long
-##ftp_url
+##download_url
 
 # site <- getURL(url = url_long,
 #                ftp.use.epsv = FALSE,
@@ -84,7 +85,9 @@ FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_d
 
 ####################################
 # Call Function to download files to local storage
-FTP_downloadandstore_pdf_func(year = 2010, month_in_digits = 01)
+FTP_downloadandstore_pdf_func(year_in_digits = 2010, month_in_digits = 01)
+FTP_downloadandstore_pdf_func(year_in_digits = 2010, month_in_digits = 02)
+
 
 ######### Automate Download for each year month cominbation
 min(email_index$MasterDate) # firt year monnth = 2010, 01
