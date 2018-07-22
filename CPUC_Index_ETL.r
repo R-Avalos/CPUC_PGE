@@ -10,7 +10,6 @@ library(lubridate)
 library(feather)
 
 ###### Pull index data from ftp server and transfrom to usable data frame
-
 ## Read data from FTP and convert to data frame
 base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
 

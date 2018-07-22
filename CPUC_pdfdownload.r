@@ -3,6 +3,7 @@
 library(RCurl)
 library(lubridate)
 library(dplyr)
+library(tidyr)
 library(tibble)
 library(feather)
 library(tm)
@@ -12,11 +13,11 @@ library(tm)
 
 # Download PDF file function
 downloadPDF <- function(x) {
-        curl_download(url = paste0(url, "/", year, "/", month_in_digits,"/", x),
+        curl::curl_download(url = paste0(url, "/", year, "/", month_in_digits,"/", x),
                       destfile = x)
 }
 
-url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
+ftp_url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
 local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
 
 
@@ -46,12 +47,12 @@ FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_d
         setwd(file.path(directory_year, month_in_digits)) #move to the directory
         print(getwd()) #print the current directory as a check
         
-        # Get list of files from site and download
+        ###### Get list of files from site and download
         site <- getURL(url = url_long,
                        ftp.use.epsv = FALSE,
                        dirlistonly = TRUE) # Get list of files on site
         site_split <- unlist(strsplit(site, "\\\r")) #split list
-        site_split <- gsun("\\\n", "", site_split) #remove headers
+        site_split <- gsub("\\\n", "", site_split) #remove headers
         site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls files
         
         # requires downloadtoPDF function 
@@ -59,61 +60,44 @@ FTP_downloadandstore_pdf_func <- function(ftp_url = url, year = 2010, month_in_d
 }
 
 
+## url_long
+##ftp_url
+
+# site <- getURL(url = url_long,
+#                ftp.use.epsv = FALSE,
+#                dirlistonly = TRUE) # Get list of files on site
+# site_split <- unlist(strsplit(site, "\\\r")) #split list
+# site_split <- gsub("\\\n", "", site_split) #remove headers
+# site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls 
+# str(site_split_PDF)
+# 
+# 
+# lapply(site_split_PDF, function(x) download.file(url =  paste0(url_long, site_split_PDF)))
+# sapply(site_split_PDF, downloadPDF) # download each file in the list and save to 
+
+
+
+
+
+
+
+
+####################################
 # Call Function to download files to local storage
-FTP_downloadandstore_pdf_func(year = 2010, month_in_digits = 02)
+FTP_downloadandstore_pdf_func(year = 2010, month_in_digits = 01)
 
+######### Automate Download for each year month cominbation
+min(email_index$MasterDate) # firt year monnth = 2010, 01
+max(email_index$MasterDate) # last year month = 2014, 09
 
-################## Convert to text files #############################
-# Since the PDFs are saved as text type, instead of image, we can use pdftotext conversion software # Download: http://www.foolabs.com/xpdf/download.html, check out https://gist.github.com/benmarwick/11333467 for reference
-
-
-dummy <- function(file_folder){
-        library(readr)
-        myfiles <- list.files(path = file_folder, 
-                              pattern = "pdf", 
-                              full.names = TRUE) # list files
-        lapply(myfiles, function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) ) # convert to pdf
-        
-        # add text files to dataframe
-        mytxtfiles <- list.files(path = file_folder, pattern = "txt", full.names = TRUE)
- ##################        
-}
-dummy
-
-
-# Tell R what folder contains your PDFs
-dest <- "D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010"
-# Create a list of PDF file names
-myfiles <- list.files(path = dest, pattern = "pdf",  full.names = TRUE)
-myfiles[3]
-lapply(myfiles, function(i) system(paste('"C:/Program Files/xpdf/bin64/pdftotext.exe"', paste0('"', i, '"')), wait = FALSE) ) # Make call to convert files from PDF TO Text files
-
-
-#### Read all text files into data frame, add column removing ".txt" as a key
-library(readr) #library to read in files
-library(tibble) #library to save as tbl_df, aka tibble
-getwd() # "D:/CPUC_PGE/CPUC_PGE_ETL"
-setwd("D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010")
-
-# Function to change individual text file into data frame and remove line breaks
-file_convert <- function(file_name) {
-        my_string <- read_file(file = file_name) # read file
-        my_string <- as.character(my_string)
-        my_string <- gsub("\r?\n|\r", " ", my_string) # remove line breaks
-        text_name <- file_name # add variable for file anme
-        data <- data_frame(text_name, my_string) 
-        colnames(data) <- c("File", "Text") 
-        return(data) 
-}
-
-# Load multiple files from folder into single table. 
-# Table key is file name, content is email text
-getwd()
-setwd("D:/CPUC_PGE/CPUC_PGE_ETL/PDF_2010")# set to appropriate working directory
-files = list.files(pattern = "*.txt") # list files
-df <- lapply(files, file_convert) %>% bind_rows() #convert to data frame
-
-
-# Download XLS files
-
-#### Setup SQL Database
+### Dataframe of year month combinations
+monthly_emails <- data.frame(unique(format(as.Date(email_index$MasterDate), "%Y-%m")))
+colnames(monthly_emails)[1] <- "YearMonth"
+monthly_emails <- monthly_emails %>%
+        separate(YearMonth, into = c("Year", "Month"), sep = "-")
+str(monthly_emails$Year)
+### Apply function for each row of year month combination
+apply(monthly_emails[1, c("Year", "Month")], 
+                     1, 
+                     function(y) FTP_downloadandstore_pdf_func(y['Year'], y['Month'])
+      )
