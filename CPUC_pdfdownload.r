@@ -9,8 +9,6 @@ library(feather)
 library(tm)
 # library(httr) #best used for API
 
-######## Create function to download each year-month and store to directory
-
 
 ftp_url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
 local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
@@ -55,70 +53,26 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
         }
         
         sapply(site_split_PDF, downloadPDF) # download each file in the list and save to local directory (printed in above check)
+        print("download complete")
 }
 
 
+### Need to TEST filtering out .xls files...
 
-getwd()
-setwd("D:/CPUC_PGE/CPUC_repo/CPUC_PGE")
-
-####### break out function for testing
-download_url = ftp_url
-year_in_digits = 2010
-month_as_character = "02"
-#
-url_long <- paste0(download_url, "/", as.character(year_in_digits), "/",
-                   as.character(month_as_character), "/")
-
-url_long
-#
-directory_year <- paste0(local_directory, 
-                         "/", 
-                         as.character(year_in_digits), 
-                         "/") #create character of the "local_directory/year/"
-directory_year
-#
-ifelse(!dir.exists(file.path(directory_year)), 
-       dir.create(file.path(directory_year)), 
-       FALSE) # Create the year directory if it does not extist
-
-ifelse(!dir.exists(file.path(directory_year, month_as_character)), 
-       dir.create(file.path(directory_year, month_as_character)), 
-       FALSE) # Create month directory if it does not exist in the year directory
-
-setwd(file.path(directory_year, month_as_character)) #move to the directory
-print(getwd()) #print the current directory as a check
-#
-
-# working
-ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/2010/02/
-ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/2010/2/
-#####        
-
-url_long
-site <- getURL(url = url_long,
-               verbose = TRUE,
+site <- getURL(url = "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/2010/02/",
                ftp.use.epsv = FALSE,
                dirlistonly = TRUE) # Get list of files on site
 site_split <- unlist(strsplit(site, "\\\r")) #split list
 site_split <- gsub("\\\n", "", site_split) #remove headers
-site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls files
-year_variable = "2010"
-month_variable = "02"
+site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split)
 
-downloadPDF <- function(x) {
-        curl::curl_download(url = paste0(url_long, x),
-                            destfile = x)
-}
-
-sapply(site_split_PDF, downloadPDF)
-
+getwd()
+setwd("D:/CPUC_PGE/CPUC_repo/CPUC_PGE")
 
 
 ####################################
 # Call Function to download files to local storage
-FTP_downloadandstore_pdf_func(year_in_digits = 2010, month_as_character = "01")
-FTP_downloadandstore_pdf_func(year_in_digits = 2010, month_as_character = "02")
+FTP_downloadandstore_pdf_func(year_in_digits = 2010, month_as_character = "03")
 
 
 ######### Automate Download for each year month cominbation
