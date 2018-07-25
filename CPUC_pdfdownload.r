@@ -11,11 +11,6 @@ library(tm)
 
 ######## Create function to download each year-month and store to directory
 
-# Download PDF file function
-downloadPDF <- function(x) {
-        curl::curl_download(url = paste0(url, "/", year_variable, "/", month_variable,"/", x),
-                      destfile = x)
-}
 
 ftp_url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
 local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
@@ -27,12 +22,6 @@ local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
 
 FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits = 2010, month_as_character = "01") {
         require(RCurl) #load package
-        year_variable = as.character(year_in_digits)
-        month_variable = as.character(month_as_character)
-        # require(lubridate)
-        #convert month to digits
-        # month_variable <- as.month(month_as_character)
-        # month_variable <- as.numeric(month_as_character)
         url_long <- paste0(download_url, "/", as.character(year_in_digits), "/",
                            month_as_character, "/") #paste url, with month year_in_digits into a string
         
@@ -58,7 +47,13 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
         site_split <- gsub("\\\n", "", site_split) #remove headers
         site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls files
         
+        
         # requires downloadtoPDF function 
+        downloadPDF <- function(x) {
+                curl::curl_download(url = paste0(url_long, x),
+                                    destfile = x)
+        }
+        
         sapply(site_split_PDF, downloadPDF) # download each file in the list and save to local directory (printed in above check)
 }
 
@@ -99,6 +94,7 @@ print(getwd()) #print the current directory as a check
 ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/2010/02/
 ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/2010/2/
 #####        
+
 url_long
 site <- getURL(url = url_long,
                verbose = TRUE,
@@ -109,6 +105,12 @@ site_split <- gsub("\\\n", "", site_split) #remove headers
 site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls files
 year_variable = "2010"
 month_variable = "02"
+
+downloadPDF <- function(x) {
+        curl::curl_download(url = paste0(url_long, x),
+                            destfile = x)
+}
+
 sapply(site_split_PDF, downloadPDF)
 
 
