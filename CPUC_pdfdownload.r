@@ -35,7 +35,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
                dir.create(file.path(directory_year, month_as_character)), 
                FALSE) # Create month directory if it does not exist in the year directory
         setwd(file.path(directory_year, month_as_character)) #move to the directory
-        print(getwd()) #print the current directory as a check
+        print(paste0("Setup direcotry ", getwd())) #print the current directory as a check
         
         ###### Get list of files from site and download
         site <- getURL(url = url_long,
@@ -44,7 +44,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
         site_split <- unlist(strsplit(site, "\\\r")) #split list
         site_split <- gsub("\\\n", "", site_split) #remove headers
         site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls files
-        
+        print(paste0("Downloading ", length(site_split_PDF), " files")) #console print files downloading
         
         # requires downloadtoPDF function 
         downloadPDF <- function(x) {
@@ -53,7 +53,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
         }
         
         sapply(site_split_PDF, downloadPDF) # download each file in the list and save to local directory (printed in above check)
-        print("download complete")
+        print("Download complete")
 }
 
 
