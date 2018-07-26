@@ -54,20 +54,11 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
         
         sapply(site_split_PDF, downloadPDF) # download each file in the list and save to local directory (printed in above check)
         print("Download complete")
+        setwd("..")
+        setwd("..")
+        print(paste0("WOrking directory set to ", getwd()))
 }
 
-
-### Need to TEST filtering out .xls files...
-
-site <- getURL(url = "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/2010/02/",
-               ftp.use.epsv = FALSE,
-               dirlistonly = TRUE) # Get list of files on site
-site_split <- unlist(strsplit(site, "\\\r")) #split list
-site_split <- gsub("\\\n", "", site_split) #remove headers
-site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split)
-
-getwd()
-setwd("D:/CPUC_PGE/CPUC_repo/CPUC_PGE")
 
 
 ####################################
