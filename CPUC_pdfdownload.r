@@ -18,15 +18,18 @@ local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
 # Function will first create the folder in the working directory for the year month
 # Once that is created, the function will get a list of PDF files from the FTP directory (removing the excel files) and download the pdfs to the local directory
 
-FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits = 2010, month_as_character = "01") {
+FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, 
+                                          year_as_character = "2010", 
+                                          month_as_character = "01") {
         require(RCurl) #load package
-        url_long <- paste0(download_url, "/", as.character(year_in_digits), "/",
-                           month_as_character, "/") #paste url, with month year_in_digits into a string
+        url_long <- paste0(download_url, "/", 
+                           year_as_character, "/",
+                           month_as_character, "/") #paste url, with month year_as_character into a string
         
         # Setup the local directory
         directory_year <- paste0(local_directory, 
                                   "/", 
-                                  as.character(year_in_digits), 
+                                  as.character(year_as_character), 
                                   "/") #create character of the "local_directory/year/"
         ifelse(!dir.exists(file.path(directory_year)), 
                dir.create(file.path(directory_year)), 
@@ -35,7 +38,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
                dir.create(file.path(directory_year, month_as_character)), 
                FALSE) # Create month directory if it does not exist in the year directory
         setwd(file.path(directory_year, month_as_character)) #move to the directory
-        print(paste0("Setup direcotry ", getwd())) #print the current directory as a check
+        print(paste0("Setup directory ", getwd())) #print the current directory as a check
         
         ###### Get list of files from site and download
         site <- getURL(url = url_long,
@@ -63,7 +66,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url, year_in_digits
 
 ####################################
 # Call Function to download files to local storage
-FTP_downloadandstore_pdf_func(year_in_digits = 2010, month_as_character = "03")
+FTP_downloadandstore_pdf_func(year_as_character = "2010", month_as_character = "03")
 
 
 ######### Automate Download for each year month cominbation
