@@ -1,5 +1,5 @@
 # PDF Download and save to local directory
-
+# install.packages(c("RCurl", "lubridate", "dplyr", "tidyr", "tibble", "feather", "tm"))
 library(RCurl)
 library(lubridate)
 library(dplyr)
@@ -11,7 +11,7 @@ library(tm)
 
 
 ftp_url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base url
-local_directory <- "D:/CPUC_PGE/CPUC_repo/CPUC_PGE" #set directory for storage
+local_directory <- "C:/projects/CPUC_PGE" #set directory for storage
 
 
 ### Function specific to this FTP site to download files
@@ -49,7 +49,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url,
         site_split_PDF <- Filter(function(x) !any(grepl(".xls", x)), site_split) #remove xls files
         print(paste0("Downloading ", length(site_split_PDF), " files")) #console print files downloading
         
-        # requires downloadtoPDF function 
+        # Create function to download each pdf from list 
         downloadPDF <- function(x) {
                 curl::curl_download(url = paste0(url_long, x),
                                     destfile = x)
@@ -59,17 +59,22 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url,
         print("Download complete")
         setwd("..")
         setwd("..")
-        print(paste0("WOrking directory set to ", getwd()))
+        print(paste0("Working directory set to ", getwd()))
 }
 
 
 
 ####################################
 # Call Function to download files to local storage
-FTP_downloadandstore_pdf_func(year_as_character = "2010", month_as_character = "03")
+FTP_downloadandstore_pdf_func(year_as_character = "2010", month_as_character = "02")
+
+# setwd("..")
+getwd()
 
 
 ######### Automate Download for each year month cominbation
+
+###! I don't have email_index! call from seperate R file..
 min(email_index$MasterDate) # firt year monnth = 2010, 01
 max(email_index$MasterDate) # last year month = 2014, 09
 
