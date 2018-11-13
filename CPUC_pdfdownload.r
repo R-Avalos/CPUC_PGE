@@ -26,7 +26,7 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url,
                            year_as_character, "/",
                            month_as_character, "/") #paste url, with month year_as_character into a string
         
-        # Setup the local directory
+        # Setup local directory
         directory_year <- paste0(local_directory, 
                                   "/", 
                                   as.character(year_as_character), 
@@ -70,6 +70,10 @@ FTP_downloadandstore_pdf_func(year_as_character = "2010", month_as_character = "
 
 # setwd("..")
 getwd()
+
+## Check this for easier method, may have to append ftp_url each file name
+### https://rdrr.io/github/skgrange/threadr/man/download_ftp_file.html
+
 
 
 ######### Automate Download for each year month cominbation

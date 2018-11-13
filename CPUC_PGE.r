@@ -33,7 +33,7 @@ email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
 #save(email_index, file = "email_index_download.rda") # save file to local
 #write_feather(email_index, "email_index_download.feather") # save file as feater to local
 
-# Transform data frame to long format
+# Transform data frame
 email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)" #stand in for missing receipent value
 email_index$Sender[email_index$Sender==""] <- "Not Recorded (Not Recorded)"
 email_index$Subject[email_index$Subject==""] <- "Not an Email"

@@ -1,38 +1,36 @@
-# Download, transform, and load the index of all emails
-
-setwd("D:/CPUC_PGE/CPUC_repo/CPUC_PGE")
+#### Download, transform, and load the index of all emails ####
 
 library(dplyr)
 library(tidyr)
 library(RCurl)
 library(data.table)
 library(lubridate)
-library(feather)
+library(feather) # in memory data format
 
-###### Pull index data from ftp server and transfrom to usable data frame
-## Read data from FTP and convert to data frame
-base.url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"
-
-
-#### Index of all Emails ####
-# Pull an index of emails to use as reference for downloading
+# Download and convert to data frame
 dest_file <- getURL("ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling/Index/SB_GT&S_Production Metadata.csv") #download file as character
-
 email_index <- fread(dest_file, sep = ",", header = TRUE) #convert to data frame
 remove(dest_file) #clean up
 
-# Transform data frame. Make each observation a unique email between sender and receiver pair
-email_index$Subject[email_index$Subject==""] <- paste0("Attachement for email sent on ", as.character(email_index$MasterDate))# observations without a subject assumed to be attachement for email
 
+### Transform data frame. Make each observation a unique email between sender and receiver pair
+email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)" #stand in for missing receipent value
+email_index$Sender[email_index$Sender==""] <- "Not Recorded (Not Recorded)"
+email_index$Subject[email_index$Subject==""] <- "Not an Email"
+email_index$Subject[email_index$Subject==""] <- paste0("Attachement for email sent on ", as.character(email_index$MasterDate))# observations without a subject assumed to be attachement for email
 email_index$MasterDate <- as.POSIXct(email_index$MasterDate, format = "%m/%d/%Y %H:%M") # convet to date with time
 email_index$Day <- floor_date(email_index$MasterDate, "days") # save date of email in new column
 email_index <- email_index %>%
         separate(Sender, into = c("Sender_Name", "Sender_Email"), sep = "\\(") # split sender into name and email into seperate variables/features
-email_index$Sender_Email <- gsub("\\)", "",email_index$Sender_Email) # remove )
+email_index$Sender_Email <- gsub("\\)", "",email_index$Sender_Email) # remove backwards bracket ")"
 email_index$Sender_Name[email_index$Sender_Name==""] <- "Not Recorded (Not Recorded)"
 
+
 email_index <- email_index %>%
-        separate_rows(Recipient, sep = ";") # split recipients into unique observations, increases obs from 120,746 to 3,863,726 obs. Each email pair is a communcation.
+        tidyr::separate_rows(Recipient, sep = ";") # split recipients into unique observations, increases obs from 120,746 to 3,863,726 obs. Each email pair is a communication.
+
+
+
 email_index <- email_index %>%
         separate(Recipient, into = c("Recipient_Name", "Recipient_Email"), sep = "\\(") #split recipient name and email into separate variables
 email_index$Recipient_Email <- gsub("\\)", "", email_index$Recipient_Email) # remove )
