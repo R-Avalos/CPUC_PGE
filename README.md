@@ -10,7 +10,7 @@ PG&E and CPUC released communications in regards to San Bruno pipeline. Communic
 Please contact author.
 
 ### Index
-
+CPUC_Index_ETL.r file downloads, converts to data frame, with option to save locally.  
 Long format with each observation, row, showing a unique link between sender and recipient.  
 Index csv available at https://archive.org/details/cpuc_pge_email_index
 
