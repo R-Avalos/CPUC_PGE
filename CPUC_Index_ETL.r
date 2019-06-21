@@ -2,8 +2,7 @@
 #### Download, transform, and load index of all email communications ####
 ########################################################################
 
-library(dplyr)
-library(tidyr)
+library(tidyverse)
 library(RCurl)
 library(data.table)
 library(lubridate)
@@ -19,7 +18,7 @@ email_index$Recipient[email_index$Recipient==""] <- "Not Recorded (Not Recorded)
 email_index$Sender[email_index$Sender==""] <- "Not Recorded (Not Recorded)"
 # email_index$Subject[email_index$Subject==""] <- "Not an Email"
 email_index$Subject[email_index$Subject==""] <- paste0("Attachement for email sent on ", as.character(email_index$MasterDate))# observations without a subject assumed to be attachement for email
-email_index$MasterDate <- as.POSIXct(email_index$MasterDate, format = "%m/%d/%Y %H:%M") # convet to date with time
+email_index$MasterDate <- as.POSIXct(email_index$MasterDate, format = "%m/%d/%Y %H:%M") # convet to date with time======
 email_index$Day <- floor_date(email_index$MasterDate, "days") # save date of email in new column
 
 # Break out sender name and email

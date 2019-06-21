@@ -36,6 +36,13 @@ email_count$ReceiveSend_ratio <- email_count$communications/email_count$emails
 summary(email_count) 
 sum(email_count$emails) # however, many of these are attachments to emails. 
 
+email_sender <- email_index %>%
+  group_by(Day, Sender_Name) %>%
+  summarise(emails = n_distinct(FileName), communications = n())
+
+email_sender %>% ggplot(aes(x = Day, y = emails, color = Sender_Name)) +
+  geom_point(alpha = 0.5) +
+  theme(legend.position = "none")
 
 # Subset by highest count by sender
 # head(summary(email_index$Sender_Name))
