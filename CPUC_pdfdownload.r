@@ -2,9 +2,8 @@
 # install.packages(c("RCurl", "lubridate", "dplyr", "tidyr", "tibble", "feather", "tm"))
 library(RCurl)
 library(lubridate)
-library(dplyr)
-library(tidyr)
-library(tibble)
+library(tidyverse)
+library(pdftools)
 library(feather)
 library(tm)
 # library(httr) #best used for API
@@ -14,7 +13,7 @@ ftp_url <- "ftp://ftp2.cpuc.ca.gov/PG&E20150130ResponseToA1312012Ruling"# base u
 local_directory <- "C:/projects/CPUC_PGE" #set directory for storage
 
 
-### Function specific to this FTP site to download files
+### Function specific to this FTP site to download files #####
 # Function will first create the folder in the working directory for the year month
 # Once that is created, the function will get a list of PDF files from the FTP directory (removing the excel files) and download the pdfs to the local directory
 
@@ -64,9 +63,11 @@ FTP_downloadandstore_pdf_func <- function(download_url = ftp_url,
 
 
 
-####################################
-# Call Function to download files to local storage
-FTP_downloadandstore_pdf_func(year_as_character = "2010", month_as_character = "02")
+#######################################################################
+# Call Function to download files to local storage        ############
+#####################################################################
+
+FTP_downloadandstore_pdf_func(year_as_character = "2010", month_as_character = "03")
 
 # setwd("..")
 getwd()
@@ -76,10 +77,12 @@ getwd()
 
 
 
+
+
 ######### Automate Download for each year month cominbation
 
 ###! I don't have email_index! call from seperate R file..
-min(email_index$MasterDate) # firt year monnth = 2010, 01
+min(email_index$MasterDate) # first year monnth = 2010, 01
 max(email_index$MasterDate) # last year month = 2014, 09
 
 ### Dataframe of year month combinations
@@ -93,3 +96,41 @@ apply(monthly_emails[1, c("Year", "Month")],
                      1, 
                      function(y) FTP_downloadandstore_pdf_func(y['Year'], y['Month'])
       )
+
+
+
+##########################################
+### PDF conversion to text   ############
+########################################
+
+test <- pdf_text("C:/projects/CPUC_PGE/2010/01/SB_GT&S_0000023.pdf") %>%
+  gsub(pattern = "\r?\n|\r", replacement = " ")
+test[2]
+
+#### Patterns #####
+
+### pages = object in list
+## broken by file name with underscores and pdf removed
+
+# From:
+# Sent: mdy_hms
+# To: 'name' (email); 'name2' (email2);
+# CC: 'name' (email)     ; if more than one
+# BCC:
+# Subject: 
+#
+# text
+#
+#
+# Email chain starting with From:
+
+
+######
+getwd()
+file_list <- paste0("C:/projects/CPUC_PGE/2010/03", "/", list.files("C:/projects/CPUC_PGE/2010/03", pattern = ".pdf"))
+lapply(file_list, 
+       FUN = function(files){
+         pdf_text(files)
+       }
+       )
+

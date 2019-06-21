@@ -14,7 +14,7 @@ file_convert <- function(file_name) {
         my_string <- read_file(file = file_name) # read file
         my_string <- as.character(my_string)
         my_string <- gsub("\r?\n|\r", " ", my_string) # remove line breaks
-        text_name <- file_name # add variable for file anme
+        text_name <- file_name # add variable for file name
         data <- data_frame(text_name, my_string) 
         colnames(data) <- c("File", "Text") 
         return(data) 
